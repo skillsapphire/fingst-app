@@ -72,6 +72,13 @@ public class CustomUserDetailService implements UserDetailsService {
         return userModel;
     }
 
+    public void updatePassword(Long caId, UserModel user){
+        Optional<UserEntity> ue = userRepository.findById(caId);
+        UserEntity entity = ue.get();
+        entity.setPassword(this.passwordEncoder.encode(user.getPassword()));
+        userRepository.save(entity);
+    }
+
     //this method actually does the validation for user existence
     @Override
     public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {

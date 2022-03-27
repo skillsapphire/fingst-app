@@ -71,6 +71,12 @@ public class JwtController {
         return um;
     }
 
+    @PatchMapping("/update-password/{caId}")
+    public ResponseEntity<HttpStatus> updatePassword(@PathVariable Long caId, @RequestBody UserModel user) {
+        this.customUserDetailService.updatePassword(caId, user);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     @GetMapping("checkTokenValidity")
     public Boolean checkTokenValidity(@RequestHeader("Authorization") String authHeader){
         //remove Bearer from header
