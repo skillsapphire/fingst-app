@@ -45,6 +45,7 @@ public class CustomUserDetailService implements UserDetailsService {
         UserEntity userEntity = new UserEntity();
         BeanUtils.copyProperties(userModel, userEntity);//it does not do a deep copy
         userEntity.setActive("N");
+        userEntity.setUnmaskedpassword(userModel.getPassword());
         Set<RoleEntity> roleEntities = new HashSet<>();
         //fetch every role from DB based on role id and than set this role to user entity roles
         for(RoleModel rm :userModel.getRoles()){
@@ -75,6 +76,7 @@ public class CustomUserDetailService implements UserDetailsService {
     public void updatePassword(Long caId, UserModel user){
         Optional<UserEntity> ue = userRepository.findById(caId);
         UserEntity entity = ue.get();
+        entity.setUnmaskedpassword(user.getPassword());
         entity.setPassword(this.passwordEncoder.encode(user.getPassword()));
         userRepository.save(entity);
     }
