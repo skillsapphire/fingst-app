@@ -18,6 +18,7 @@ public class UserEntity {
     @Column(name = "USER_NAME", nullable = false)
     private String username;
     private String password;
+    private String unmaskedpassword;
     private String firstName;
     private String lastName;
     private String email;
@@ -98,6 +99,14 @@ public class UserEntity {
 
     public String getActive() {
         return active;
+    }
+
+    public String getUnmaskedpassword() {
+        return unmaskedpassword;
+    }
+
+    public void setUnmaskedpassword(String unmaskedpassword) {
+        this.unmaskedpassword = unmaskedpassword;
     }
 
     public void setActive(String active) {
