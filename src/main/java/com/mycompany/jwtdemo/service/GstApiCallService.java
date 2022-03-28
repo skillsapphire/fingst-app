@@ -58,13 +58,13 @@ public class GstApiCallService {
     }
 
     public GstWrapperModel getAllFilingsWithFeign(String gstNo, String fy, String email) {
-
+        System.out.println("======Starting getAllFilingsWithFeign Call Govt GST API - for FY - "+fy);
         GstWrapperModel gfwm = null;
         try {
             //making actual Govt. GST API call
             gfwm = gstFeignClient.getAllFilings(gstNo, fy, email);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            throw ex;
         }
 
         if(gfwm != null){
@@ -84,6 +84,7 @@ public class GstApiCallService {
                 }
                 System.out.println("Done for gstNo: "+gstNo);
             }
+            System.out.println("======Done getAllFilingsWithFeign Call Govt GST API - for FY - "+fy);
         }
         //log after successful insertion of all records for 1 GST number
         return gfwm;

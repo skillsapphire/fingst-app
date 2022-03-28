@@ -44,9 +44,17 @@ public class FilingOverviewController {
 
     @GetMapping("/refresh-master-data/{caId}")
     public void refreshMasterData(@PathVariable Long caId){
-       List<GstAccountEntity> gstAccountEntityList =  overviewService.getGstAccounts(caId);
-       gstMasterDataService.performBatch(gstAccountEntityList);
-       overviewService.updateNotFiledOverview(gstAccountEntityList);
-       customUserDetailService.updateLastRefreshMasterData(caId);
+        try {
+            List<GstAccountEntity> gstAccountEntityList = overviewService.getGstAccounts(caId);
+            System.out.println("Starting Batch Call Govt GST API - ms - " + System.currentTimeMillis());
+            gstMasterDataService.performBatch(gstAccountEntityList);
+            System.out.println("Done with Batch Call Govt GST API - ms - " + System.currentTimeMillis());
+            System.out.println("Starting updateNotFiledOverview - ms - " + System.currentTimeMillis());
+            overviewService.updateNotFiledOverview(gstAccountEntityList);
+            System.out.println("Done updateNotFiledOverview - ms - " + System.currentTimeMillis());
+            customUserDetailService.updateLastRefreshMasterData(caId);
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
     }
 }

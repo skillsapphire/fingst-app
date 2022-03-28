@@ -60,10 +60,4 @@ public class GstAccountController {
         return ResponseEntity.ok(accountDTOS);
     }
 
-    @GetMapping("/filings")
-    public GstWrapperModel getAllFilings(){
-        GstWrapperModel gfwm = gstApiCallService.getAllFilingsWithFeign("21ACJPT0060G1ZZ", "2020-21", "obify.consulting@gmail.com");
-        //GstWrapperModel gfwm = gstFeignClient.getAllFilings("21ACJPT0060G1ZZ", "2020-21", "obify.consulting%40gmail.com");
-        return gfwm;
-    }
 }
