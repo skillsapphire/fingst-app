@@ -62,7 +62,20 @@ public class GstApiCallService {
         GstWrapperModel gfwm = null;
         try {
             //making actual Govt. GST API call
-            gfwm = gstFeignClient.getAllFilings(gstNo, fy, email);
+            //gfwm = gstFeignClient.getAllFilings(gstNo, fy, email);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("client_id", clientId);
+            headers.set("client_secret", clientSec);
+
+            HttpEntity<GstWrapperModel> httpEntity = new HttpEntity<>(gfwm, headers);
+            ResponseEntity<GstWrapperModel> gstEntity = restTemplate.exchange(baseUrl+"/public/rettrack?"+"gstin="+gstNo+"&fy="+fy+"&email=obify.consulting@gmail.com", HttpMethod.GET, httpEntity, GstWrapperModel.class);
+            //ResponseEntity<GstWrapperModel> gstEntity = restTemplate.exchange(baseUrl+"/rettrack-success.json?"+"gstin="+gstNo+"&fy="+fy+"&email=obify.consulting@gmail.com", HttpMethod.GET, httpEntity, GstWrapperModel.class);
+
+            if(gstEntity.getStatusCode() == HttpStatus.OK){
+                gfwm = gstEntity.getBody();
+            }
+
             System.out.println("gstFeignClient call went well");
         } catch (Exception ex) {
             System.out.println("Inside Refresh getAllFilingsWithFeign Exception");
