@@ -63,7 +63,10 @@ public class GstApiCallService {
         try {
             //making actual Govt. GST API call
             gfwm = gstFeignClient.getAllFilings(gstNo, fy, email);
+            System.out.println("gstFeignClient call went well");
         } catch (Exception ex) {
+            System.out.println("Inside Refresh getAllFilingsWithFeign Exception");
+            System.out.println(ex.getMessage());
             throw ex;
         }
 

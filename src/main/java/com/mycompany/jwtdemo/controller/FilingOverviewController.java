@@ -54,6 +54,8 @@ public class FilingOverviewController {
             System.out.println("Done updateNotFiledOverview - ms - " + System.currentTimeMillis());
             customUserDetailService.updateLastRefreshMasterData(caId);
         }catch (Exception ex){
+            System.out.println("Inside Refresh Data Exception");
+            System.out.println(ex.getMessage());
             ex.printStackTrace();
         }
     }
