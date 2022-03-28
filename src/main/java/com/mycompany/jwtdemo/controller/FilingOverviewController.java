@@ -53,8 +53,13 @@ public class FilingOverviewController {
             overviewService.updateNotFiledOverview(gstAccountEntityList);
             System.out.println("Done updateNotFiledOverview - ms - " + System.currentTimeMillis());
             customUserDetailService.updateLastRefreshMasterData(caId);
+            System.out.println("Done updateLastRefreshMasterData - ms - " + System.currentTimeMillis());
+            gstMasterDataService.sendEmail("success");
+            System.out.println("Done sendEmail success - ms - " + System.currentTimeMillis());
         }catch (Exception ex){
             System.out.println("Inside Refresh Data Exception");
+            gstMasterDataService.sendEmail("error");
+            System.out.println("Done sendEmail error - ms - " + System.currentTimeMillis());
             System.out.println(ex.getMessage());
             ex.printStackTrace();
         }

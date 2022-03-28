@@ -6,8 +6,10 @@ import com.mycompany.jwtdemo.repository.GstAccountRepository;
 import com.mycompany.jwtdemo.repository.GstFiledRepository;
 import com.mycompany.jwtdemo.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -25,6 +27,8 @@ public class GstMasterDataService {
     private GstAccountRepository gstAccountRepository;
     @Autowired
     private FilingOverviewService overviewService;
+    @Autowired
+    private RestTemplate restTemplate;
 
     public String getFinancialYear(String fyType){
         LocalDate ld = LocalDate.now();
@@ -56,6 +60,15 @@ public class GstMasterDataService {
         }
         for(GstAccountEntity gae: allGstAccEntities) {
             gstApiCallService.getAllFilingsWithFeign(gae.getGstNo(), getFinancialYear("previous"), "obify.consulting@gmail.com");
+        }
+    }
+
+
+    public ResponseEntity<String> sendEmail(String type){
+        if(type.equalsIgnoreCase("success")){
+            return restTemplate.getForEntity("http://obify.in/apis/email.php/filing-gst-success", String.class);
+        }else{
+            return restTemplate.getForEntity("http://obify.in/apis/email.php/filing-gst-error", String.class);
         }
     }
 }
