@@ -41,6 +41,7 @@ public class FilingOverviewService {
         List<GstAccountEntity> gstAccounts = getGstAccounts(caId);
         gstAccounts.stream().forEach(account -> {
             FilingOverviewDTO overviewDTO = new FilingOverviewDTO();
+            overviewDTO.setAccountId(account.getId());
             overviewDTO.setFirmName(account.getFirmName());
             overviewDTO.setGstNo(account.getGstNo());
             overviewDTOS.add(overviewDTO);

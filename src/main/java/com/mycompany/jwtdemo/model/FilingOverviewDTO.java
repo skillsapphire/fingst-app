@@ -11,6 +11,7 @@ import java.util.Map;
 @Setter
 public class FilingOverviewDTO {
 
+    private Long accountId;
     private String firmName;
     private String gstNo;
     private LocalDate returnPeriodGstr1;

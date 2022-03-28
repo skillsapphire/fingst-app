@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,7 +25,7 @@ public class UserEntity {
     private String email;
     private String phone;
     private String active;
-    private LocalDateTime lastRefreshed;
+    private ZonedDateTime lastRefreshed;
 
     @JsonManagedReference//helps avoid circular dependency in bidirectional mapping
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
@@ -113,11 +114,11 @@ public class UserEntity {
         this.active = active;
     }
 
-    public LocalDateTime getLastRefreshed() {
+    public ZonedDateTime getLastRefreshed() {
         return lastRefreshed;
     }
 
-    public void setLastRefreshed(LocalDateTime lastRefreshed) {
+    public void setLastRefreshed(ZonedDateTime lastRefreshed) {
         this.lastRefreshed = lastRefreshed;
     }
 }

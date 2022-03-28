@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -22,7 +22,8 @@ public class UserModel implements UserDetails {
     private String email;
     private String phone;
     private String active;
-    private LocalDateTime lastRefreshed;
+    private ZonedDateTime lastRefreshed;
+    private String lastRefreshedFormatted;
 
     private Set<RoleModel> roles = new HashSet<>();
 
@@ -130,11 +131,19 @@ public class UserModel implements UserDetails {
         this.active = active;
     }
 
-    public LocalDateTime getLastRefreshed() {
+    public ZonedDateTime getLastRefreshed() {
         return lastRefreshed;
     }
 
-    public void setLastRefreshed(LocalDateTime lastRefreshed) {
+    public String getLastRefreshedFormatted() {
+        return lastRefreshedFormatted;
+    }
+
+    public void setLastRefreshedFormatted(String lastRefreshedFormatted) {
+        this.lastRefreshedFormatted = lastRefreshedFormatted;
+    }
+
+    public void setLastRefreshed(ZonedDateTime lastRefreshed) {
         this.lastRefreshed = lastRefreshed;
     }
 }

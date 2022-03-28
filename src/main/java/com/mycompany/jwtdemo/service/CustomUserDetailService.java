@@ -14,7 +14,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -35,7 +39,12 @@ public class CustomUserDetailService implements UserDetailsService {
         Optional<UserEntity> optge = userRepository.findById(caId);
         if(optge.isPresent()){
             UserEntity ue = optge.get();
-            ue.setLastRefreshed(LocalDateTime.now());
+            // take the instant
+            Instant instant = Instant.now();
+            //https://stackoverflow.com/questions/59048196/to-display-local-date-time-for-different-countries-in-java
+            // then in Asia/Calcutta
+            ZonedDateTime currentISTime = instant.atZone(ZoneId.of("Asia/Calcutta"));
+            ue.setLastRefreshed(currentISTime);
             userRepository.save(ue);
         }
     }
@@ -93,6 +102,13 @@ public class CustomUserDetailService implements UserDetailsService {
 
         UserModel userModel = new UserModel();
         BeanUtils.copyProperties(userEntity, userModel);
+        ZonedDateTime istTime = userEntity.getLastRefreshed().withZoneSameInstant(ZoneId.of("Asia/Calcutta"));
+        userModel.setLastRefreshed(istTime);
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy@HH:mm:ss");
+        String formattedString = istTime.format(formatter);
+        userModel.setLastRefreshedFormatted(formattedString);
+
         //convert RoleEntities to RoleModels
         Set<RoleModel> roleModels = new HashSet<>();
         RoleModel rm = null;
