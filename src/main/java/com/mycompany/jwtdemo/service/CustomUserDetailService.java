@@ -1,25 +1,27 @@
 package com.mycompany.jwtdemo.service;
 
+import com.mycompany.jwtdemo.entity.GstAccountEntity;
 import com.mycompany.jwtdemo.entity.RoleEntity;
 import com.mycompany.jwtdemo.entity.UserEntity;
 import com.mycompany.jwtdemo.model.RoleModel;
 import com.mycompany.jwtdemo.model.UserModel;
+import com.mycompany.jwtdemo.repository.GstAccountRepository;
 import com.mycompany.jwtdemo.repository.RoleRepository;
 import com.mycompany.jwtdemo.repository.UserRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -30,23 +32,33 @@ public class CustomUserDetailService implements UserDetailsService {
     private UserRepository userRepository;
 
     @Autowired
+    private GstAccountRepository gstAccountRepository;
+
+    @Autowired
     private RoleRepository roleRepository;
 
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
 
-    public void updateLastRefreshMasterData(Long caId){
-        Optional<UserEntity> optge = userRepository.findById(caId);
-        if(optge.isPresent()){
-            UserEntity ue = optge.get();
+    public void updateLastRefreshMasterData(List<Long> accounts, String fy){
+
+        LocalDate ld = LocalDate.now();
+        Integer currentYear = ld.getYear();
+
             // take the instant
             Instant instant = Instant.now();
             //https://stackoverflow.com/questions/59048196/to-display-local-date-time-for-different-countries-in-java
             // then in Asia/Calcutta
             ZonedDateTime currentISTime = instant.atZone(ZoneId.of("Asia/Calcutta"));
-            ue.setLastRefreshed(currentISTime);
-            userRepository.save(ue);
-        }
+            List<GstAccountEntity> gstAccountEntityList = gstAccountRepository.findAllByIdIn(accounts);
+            for(GstAccountEntity gae: gstAccountEntityList){
+                if(currentYear.toString().equalsIgnoreCase(fy)){
+                    gae.setLastRefreshedCurrFy(currentISTime);
+                }else{
+                    gae.setLastRefreshedPrevFy(currentISTime);
+                }
+            }
+            gstAccountRepository.saveAll(gstAccountEntityList);
     }
 
     public UserModel register(UserModel userModel){
@@ -108,6 +120,11 @@ public class CustomUserDetailService implements UserDetailsService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy@HH:mm:ss");
         String formattedString = istTime.format(formatter);
         userModel.setLastRefreshedFormatted(formattedString);
+
+        istTime = userEntity.getLastRefreshedNotFiled().withZoneSameInstant(ZoneId.of("Asia/Calcutta"));
+        formattedString = istTime.format(formatter);
+        userModel.setLastRefreshedNotFiled(istTime);
+        userModel.setLastRefreshedNotFiledFormatted(formattedString);
 
         //convert RoleEntities to RoleModels
         Set<RoleModel> roleModels = new HashSet<>();

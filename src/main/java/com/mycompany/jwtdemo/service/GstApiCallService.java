@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
@@ -57,14 +58,33 @@ public class GstApiCallService {
         return gstWrapperModel;
     }
 
-    public GstWrapperModel getAllFilingsWithFeign(String gstNo, String fy, String email) {
+    @Transactional
+    public GstWrapperModel getAllFilingsWithFeign(String gstNo, String fy, String type, String email) {
         System.out.println("======Starting getAllFilingsWithFeign Call Govt GST API - for FY - "+fy);
         GstWrapperModel gfwm = null;
+        String apiUrl = "";
         try {
             //making actual Govt. GST API call
-            gfwm = gstFeignClient.getAllFilings(gstNo, fy, email);
-
-            System.out.println("gstFeignClient call went well");
+            /*if(type.equalsIgnoreCase("BOTH")) {
+                gfwm = gstFeignClient.getAllFilings(gstNo, fy, email);
+            }else{
+                gfwm = gstFeignClient.getAllFilingsWithRtypeFilter(gstNo, fy, type, email);
+            }*/
+            //////Rest Template
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("client_id", clientId);
+            headers.set("client_secret", clientSec);
+            if(type.equalsIgnoreCase("BOTH")) {
+                apiUrl = "gstin="+gstNo+"&fy="+fy+"&email=obify.consulting@gmail.com";
+            }else{
+                apiUrl = "gstin="+gstNo+"&fy="+fy+"&type="+type+"&email=obify.consulting@gmail.com";
+            }
+            HttpEntity<GstWrapperModel> httpEntity = new HttpEntity<>(gfwm, headers);
+            ResponseEntity<GstWrapperModel> gstEntity = restTemplate.exchange(baseUrl+"/public/rettrack?"+apiUrl, HttpMethod.GET, httpEntity, GstWrapperModel.class);
+            gfwm = gstEntity.getBody();
+            ////End
+            System.out.println("gstFeignClient call went well for fy "+fy);
         } catch (Exception ex) {
             System.out.println("Inside Refresh getAllFilingsWithFeign Exception");
             System.out.println(ex.getMessage());
@@ -75,6 +95,7 @@ public class GstApiCallService {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
             //Converting every GST Filing entry for 1 GST Number for 1 FY into GstEntity and saving in Database
             if(gfwm.getData() != null) {
+                filedRepository.deleteAllByGstNo(gstNo);
                 for (GstDataModel gdm : gfwm.getData().getEFiledlist()) {
                     GstFiledEntity gstFiledEntity = new GstFiledEntity();
                     gstFiledEntity.setReturnType(gdm.getRtntype());
@@ -86,7 +107,7 @@ public class GstApiCallService {
                     gstFiledEntity.setMode(gdm.getMof());
                     filedRepository.save(gstFiledEntity);
                 }
-                System.out.println("Done for gstNo: "+gstNo);
+                System.out.println("Deletion and Updation Done for gstNo: "+gstNo);
             }
             System.out.println("======Done getAllFilingsWithFeign Call Govt GST API - for FY - "+fy);
         }

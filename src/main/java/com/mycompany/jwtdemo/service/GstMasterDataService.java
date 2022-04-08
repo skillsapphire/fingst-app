@@ -41,6 +41,14 @@ public class GstMasterDataService {
         return prevYear+"-"+currentYear.toString().substring(2);
     }
 
+    public String getFinancialYearValue(String fy){
+        Integer currYr = Integer.parseInt(fy);
+        Integer prevYr = currYr - 1;
+        String fyFinal = prevYr+"-"+currYr.toString().substring(2);
+        //2020-21
+        return fyFinal;
+    }
+
     //https://stackoverflow.com/questions/7979165/spring-cron-expression-for-every-after-30-minutes
     //@Scheduled(cron = "0 0/5 * * * ?")//every 5 min
     public void scheduleGetFilings(){
@@ -50,16 +58,22 @@ public class GstMasterDataService {
         //Read all GST number from GstAccount table
         List<GstAccountEntity> allGstAccEntities = gstAccountRepository.findAll();
         performBatch(allGstAccEntities);
-        overviewService.updateNotFiledOverview(allGstAccEntities);
+        overviewService.updateNotFiledOverview(allGstAccEntities, "BOTH");
         System.out.println("*******Scheduler Iteration Ended***********");
     }
 
     public void performBatch(List<GstAccountEntity> allGstAccEntities){
         for(GstAccountEntity gae: allGstAccEntities) {
-            gstApiCallService.getAllFilingsWithFeign(gae.getGstNo(), getFinancialYear("current"), "obify.consulting@gmail.com");
+            gstApiCallService.getAllFilingsWithFeign(gae.getGstNo(), getFinancialYear("current"), "BOTH", "obify.consulting@gmail.com");
         }
         for(GstAccountEntity gae: allGstAccEntities) {
-            gstApiCallService.getAllFilingsWithFeign(gae.getGstNo(), getFinancialYear("previous"), "obify.consulting@gmail.com");
+            gstApiCallService.getAllFilingsWithFeign(gae.getGstNo(), getFinancialYear("previous"), "BOTH","obify.consulting@gmail.com");
+        }
+    }
+
+    public void performBatchWithFilter(List<GstAccountEntity> allGstAccEntities, String fy, String rtype){
+        for(GstAccountEntity gae: allGstAccEntities) {
+            gstApiCallService.getAllFilingsWithFeign(gae.getGstNo(), getFinancialYearValue(fy), rtype,"obify.consulting@gmail.com");
         }
     }
 

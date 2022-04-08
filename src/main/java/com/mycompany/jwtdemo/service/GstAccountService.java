@@ -14,6 +14,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -75,16 +78,37 @@ public class GstAccountService {
     public List<GstAccountDTO> getAllMyGstAccounts(Long caId, Pageable pageable){
 
         List<GstAccountEntity> gstAccountEntities = null;
-        Page<GstAccountEntity> pagedAccounts = gstAccountRepository.findByCaIdAndActiveContains(caId, "Y", pageable);
+        Page<GstAccountEntity> pagedAccounts = gstAccountRepository.findByCaIdAndActiveContainsOrderByFirmName(caId, "Y", pageable);
 
         gstAccountEntities = pagedAccounts.getContent();
 
         List<GstAccountDTO> gstAccountDTOList = new ArrayList<>();
         GstAccountDTO gstAccountDTO = null;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy@HH:mm:ss");
+        ZonedDateTime istTime = null;
+        String formattedString = null;
 
         for(GstAccountEntity gae: gstAccountEntities){
             gstAccountDTO = new GstAccountDTO();
             BeanUtils.copyProperties(gae, gstAccountDTO);
+            if(gae.getLastRefreshed() != null) {
+                istTime = gae.getLastRefreshed().withZoneSameInstant(ZoneId.of("Asia/Calcutta"));
+                gstAccountDTO.setLastRefreshed(istTime);
+                formattedString = istTime.format(formatter);
+                gstAccountDTO.setLastRefreshedFormatted(formattedString);
+            }
+            if(gae.getLastRefreshedCurrFy() != null) {
+                istTime = gae.getLastRefreshedCurrFy().withZoneSameInstant(ZoneId.of("Asia/Calcutta"));
+                gstAccountDTO.setLastRefreshedCurrFy(istTime);
+                formattedString = istTime.format(formatter);
+                gstAccountDTO.setLastRefreshedCurrFyFormatted(formattedString);
+            }
+            if(gae.getLastRefreshedPrevFy() != null) {
+                istTime = gae.getLastRefreshedPrevFy().withZoneSameInstant(ZoneId.of("Asia/Calcutta"));
+                gstAccountDTO.setLastRefreshedPrevFy(istTime);
+                formattedString = istTime.format(formatter);
+                gstAccountDTO.setLastRefreshedPrevFyFormatted(formattedString);
+            }
             gstAccountDTOList.add(gstAccountDTO);
         }
 

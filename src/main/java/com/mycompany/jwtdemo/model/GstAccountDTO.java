@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 @Getter
 @Setter
@@ -20,4 +21,11 @@ public class GstAccountDTO {
     private String firmName;
     private Long caId;
     private LocalDate creationDate;
+    private ZonedDateTime lastRefreshed;
+    private String lastRefreshedFormatted;
+
+    private ZonedDateTime lastRefreshedCurrFy;
+    private String lastRefreshedCurrFyFormatted;
+    private ZonedDateTime lastRefreshedPrevFy;
+    private String lastRefreshedPrevFyFormatted;
 }

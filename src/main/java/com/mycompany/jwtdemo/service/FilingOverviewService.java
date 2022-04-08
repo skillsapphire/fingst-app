@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -80,7 +81,7 @@ public class FilingOverviewService {
 
     public List<GstAccountEntity> getGstAccounts(Long caId){
         Pageable pageable = PageRequest.of(0, 100000);
-        Page<GstAccountEntity> pagedAccounts = accountRepository.findByCaIdAndActiveContains(caId, "Y", pageable);
+        Page<GstAccountEntity> pagedAccounts = accountRepository.findByCaIdAndActiveContainsOrderByFirmName(caId, "Y", pageable);
 
         return pagedAccounts.getContent();
     }
@@ -117,20 +118,28 @@ public class FilingOverviewService {
         });
         return notFiledDetails;
     }
-
-    public void updateNotFiledOverview(List<GstAccountEntity> accounts) {
-        notFiledRepository.deleteAll();
+    @Transactional
+    public void updateNotFiledOverview(List<GstAccountEntity> accounts, String type) {
+        for(GstAccountEntity ge: accounts){
+            notFiledRepository.deleteAllByGstNo(ge.getGstNo());
+        }
         accounts.forEach(acc -> {
             List<GstFiledEntity> filedEntities = gstFiledRepository.findAllByGstNoOrderByGstNo(acc.getGstNo());
-            List<GstFiledEntity> gstr1List = filedEntities.stream()
-                    .filter(e -> e.getReturnType().equalsIgnoreCase("GSTR1"))
-                    .collect(Collectors.toList());
-            updateEntityByDates(gstr1List, acc.getGstNo(), "GSTR1");
-            List<GstFiledEntity> gstr3bList = filedEntities.stream()
-                    .filter(e -> e.getReturnType().equalsIgnoreCase("GSTR3B"))
-                    .collect(Collectors.toList());
-            updateEntityByDates(gstr1List, acc.getGstNo(), "GSTR3B");
-
+            if(type.equalsIgnoreCase("BOTH")) {
+                List<GstFiledEntity> gstr1List = filedEntities.stream()
+                        .filter(e -> e.getReturnType().equalsIgnoreCase("GSTR1"))
+                        .collect(Collectors.toList());
+                updateEntityByDates(gstr1List, acc.getGstNo(), "GSTR1");
+                List<GstFiledEntity> gstr3bList = filedEntities.stream()
+                        .filter(e -> e.getReturnType().equalsIgnoreCase("GSTR3B"))
+                        .collect(Collectors.toList());
+                updateEntityByDates(gstr3bList, acc.getGstNo(), "GSTR3B");
+            }else {
+                List<GstFiledEntity> gstrTypeList = filedEntities.stream()
+                        .filter(e -> e.getReturnType().equalsIgnoreCase(type))
+                        .collect(Collectors.toList());
+                updateEntityByDates(gstrTypeList, acc.getGstNo(), type);
+            }
         });
     }
 

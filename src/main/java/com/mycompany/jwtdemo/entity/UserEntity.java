@@ -26,6 +26,7 @@ public class UserEntity {
     private String phone;
     private String active;
     private ZonedDateTime lastRefreshed;
+    private ZonedDateTime lastRefreshedNotFiled;
 
     @JsonManagedReference//helps avoid circular dependency in bidirectional mapping
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
@@ -112,6 +113,14 @@ public class UserEntity {
 
     public void setActive(String active) {
         this.active = active;
+    }
+
+    public ZonedDateTime getLastRefreshedNotFiled() {
+        return lastRefreshedNotFiled;
+    }
+
+    public void setLastRefreshedNotFiled(ZonedDateTime lastRefreshedNotFiled) {
+        this.lastRefreshedNotFiled = lastRefreshedNotFiled;
     }
 
     public ZonedDateTime getLastRefreshed() {

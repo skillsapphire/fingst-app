@@ -6,6 +6,7 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Getter
 @Setter
@@ -27,4 +28,7 @@ public class GstAccountEntity {
     private Long caId;
     private LocalDate creationDate;
     private String active;
+    private ZonedDateTime lastRefreshed;
+    private ZonedDateTime lastRefreshedCurrFy;
+    private ZonedDateTime lastRefreshedPrevFy;
 }

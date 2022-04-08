@@ -1,14 +1,21 @@
 package com.mycompany.jwtdemo.controller;
 
 import com.mycompany.jwtdemo.entity.GstAccountEntity;
+import com.mycompany.jwtdemo.entity.UserEntity;
 import com.mycompany.jwtdemo.model.FilingOverviewDTO;
+import com.mycompany.jwtdemo.repository.GstAccountRepository;
 import com.mycompany.jwtdemo.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/gst")
@@ -20,6 +27,9 @@ public class FilingOverviewController {
 
     @Autowired
     private GstAccountService gstAccountService;
+
+    @Autowired
+    private GstAccountRepository gstAccountRepository;
 
     @Autowired
     private GstMasterDataService gstMasterDataService;
@@ -42,26 +52,39 @@ public class FilingOverviewController {
         return ResponseEntity.ok(filingOverviewDTOS);
     }
 
-    @GetMapping("/refresh-master-data/{caId}")
-    public void refreshMasterData(@PathVariable Long caId){
+    @GetMapping("/refresh-master-data-with-filter/{caId}")
+    public void refreshMasterDataWithFilter(@PathVariable Long caId, @RequestParam List<Long> accounts, @RequestParam("fy") String fy, @RequestParam("type") String type) {
         try {
-            List<GstAccountEntity> gstAccountEntityList = overviewService.getGstAccounts(caId);
-            System.out.println("Starting Batch Call Govt GST API - ms - " + System.currentTimeMillis());
-            gstMasterDataService.performBatch(gstAccountEntityList);
-            System.out.println("Done with Batch Call Govt GST API - ms - " + System.currentTimeMillis());
-            System.out.println("Starting updateNotFiledOverview - ms - " + System.currentTimeMillis());
-            overviewService.updateNotFiledOverview(gstAccountEntityList);
-            System.out.println("Done updateNotFiledOverview - ms - " + System.currentTimeMillis());
-            customUserDetailService.updateLastRefreshMasterData(caId);
-            System.out.println("Done updateLastRefreshMasterData - ms - " + System.currentTimeMillis());
+            List<GstAccountEntity> gstAccountEntityList = null;
+            if(accounts.isEmpty()){
+                gstAccountEntityList = overviewService.getGstAccounts(caId);
+            }else{
+                gstAccountEntityList = gstAccountRepository.findAllByIdIn(accounts);
+            }
+
+            String gstApiRtype = "BOTH";
+            if(type.equalsIgnoreCase("GSTR1")){
+                gstApiRtype = "R1";
+            }else if(type.equalsIgnoreCase("GSTR1")){
+                gstApiRtype = "R3B";
+            }
+            System.out.println("Starting Batch Call Govt GST API");
+            gstMasterDataService.performBatchWithFilter(gstAccountEntityList, fy, gstApiRtype);
+            System.out.println("End Batch Call Govt GST API");
+            System.out.println("Starting updateNotFiledOverview");
+            overviewService.updateNotFiledOverview(gstAccountEntityList, type);
+            System.out.println("Ending updateNotFiledOverview");
+            customUserDetailService.updateLastRefreshMasterData(accounts, fy);
+            System.out.println("Done updateLastRefreshMasterData");
             gstMasterDataService.sendEmail("success");
-            System.out.println("Done sendEmail success - ms - " + System.currentTimeMillis());
-        }catch (Exception ex){
+            System.out.println("Done sendEmail success");
+        } catch (Exception ex) {
             System.out.println("Inside Refresh Data Exception");
             gstMasterDataService.sendEmail("error");
-            System.out.println("Done sendEmail error - ms - " + System.currentTimeMillis());
+            System.out.println("Done sendEmail error");
             System.out.println(ex.getMessage());
             ex.printStackTrace();
         }
     }
+
 }

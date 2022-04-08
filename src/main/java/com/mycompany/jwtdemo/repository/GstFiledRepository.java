@@ -7,6 +7,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface GstFiledRepository extends CrudRepository<GstFiledEntity,Long> {
+
+    void deleteAllByGstNo(String gstNo);
     List<GstFiledEntity> findAllByGstNoAndReturnType(String gstNo, String returnType);
     List<GstFiledEntity> findAllByGstNoOrderByGstNo(String gstNo);
     List<GstFiledEntity> findAllOrderByGstNo(String gstNo);

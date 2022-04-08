@@ -25,6 +25,9 @@ public class UserModel implements UserDetails {
     private ZonedDateTime lastRefreshed;
     private String lastRefreshedFormatted;
 
+    private ZonedDateTime lastRefreshedNotFiled;
+    private String lastRefreshedNotFiledFormatted;
+
     private Set<RoleModel> roles = new HashSet<>();
 
     public Long getId() {
@@ -129,6 +132,22 @@ public class UserModel implements UserDetails {
 
     public void setActive(String active) {
         this.active = active;
+    }
+
+    public ZonedDateTime getLastRefreshedNotFiled() {
+        return lastRefreshedNotFiled;
+    }
+
+    public void setLastRefreshedNotFiled(ZonedDateTime lastRefreshedNotFiled) {
+        this.lastRefreshedNotFiled = lastRefreshedNotFiled;
+    }
+
+    public String getLastRefreshedNotFiledFormatted() {
+        return lastRefreshedNotFiledFormatted;
+    }
+
+    public void setLastRefreshedNotFiledFormatted(String lastRefreshedNotFiledFormatted) {
+        this.lastRefreshedNotFiledFormatted = lastRefreshedNotFiledFormatted;
     }
 
     public ZonedDateTime getLastRefreshed() {

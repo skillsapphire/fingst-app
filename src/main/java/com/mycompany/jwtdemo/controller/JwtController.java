@@ -52,8 +52,11 @@ public class JwtController {
 
         UsernamePasswordAuthenticationToken upat = new UsernamePasswordAuthenticationToken(jwtRequest.getUserName(), jwtRequest.getPassword());
         //authenticate the user
-        authenticationManager.authenticate(upat);
-
+        try {
+            authenticationManager.authenticate(upat);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         UserDetails userDetails = customUserDetailService.loadUserByUsername(jwtRequest.getUserName());
         String jwtToken = jwtUtil.generateToken(userDetails);
 

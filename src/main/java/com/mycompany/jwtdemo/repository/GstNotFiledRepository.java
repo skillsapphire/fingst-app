@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface GstNotFiledRepository extends CrudRepository<NotFiledOverviewEntity,Long> {
+    void deleteAllByGstNo(String gstNo);
     List<NotFiledOverviewEntity> findByGstNoAndReturnTypeAndDateOfGstFilingBetween(String gstNo,
                                                   String retType, LocalDate start, LocalDate end);
 }

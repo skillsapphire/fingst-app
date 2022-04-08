@@ -96,7 +96,7 @@ public class ReportService {
 
     public List<GstAccountEntity> getGstAccounts(Long caId){
         Pageable pageable = PageRequest.of(0, 100000);
-        Page<GstAccountEntity> pagedAccounts = accountRepository.findByCaIdAndActiveContains(caId, "Y", pageable);
+        Page<GstAccountEntity> pagedAccounts = accountRepository.findByCaIdAndActiveContainsOrderByFirmName(caId, "Y", pageable);
 
         return pagedAccounts.getContent();
     }
