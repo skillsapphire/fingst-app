@@ -25,23 +25,16 @@ public class ExcelHelper {
                 Cell cell = headerRow.createCell(col);
                 cell.setCellValue(HEADERs[col]);
             }
-            //int rowIdx = 1;
-            /*for (NotFiledDTO notFiledDTO : notFiledDTOS) {
-                Row row = sheet.createRow(rowIdx++);
-                row.createCell(0).setCellValue(notFiledDTO.getFirmName());
-                row.createCell(1).setCellValue(notFiledDTO.getGstNo());
-                row.createCell(2).setCellValue(notFiledDTO.getGstr1Status());
-                row.createCell(3).setCellValue(notFiledDTO.getGstr3bStatus());
-            }*/
-
-            int[] rowIdx = {0};
-            notFiledDTOS.stream().parallel().forEach(notFiledDTO -> {
+            int[] rowIdx = {1};
+            //for (NotFiledDTO notFiledDTO : notFiledDTOS) {
+            notFiledDTOS.parallelStream().forEach((notFiledDTO)->{
                 Row row = sheet.createRow(rowIdx[0]++);
                 row.createCell(0).setCellValue(notFiledDTO.getFirmName());
                 row.createCell(1).setCellValue(notFiledDTO.getGstNo());
                 row.createCell(2).setCellValue(notFiledDTO.getGstr1Status());
                 row.createCell(3).setCellValue(notFiledDTO.getGstr3bStatus());
             });
+
             workbook.write(out);
             return new ByteArrayInputStream(out.toByteArray());
         } catch (IOException e) {
