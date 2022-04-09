@@ -34,9 +34,6 @@ public class FilingOverviewController {
     @Autowired
     private GstMasterDataService gstMasterDataService;
 
-    @Autowired
-    private CustomUserDetailService customUserDetailService;
-
     @GetMapping(value = "/get-filing-det/{caId}")
     public ResponseEntity<List<FilingOverviewDTO>> getFilingOverview(@PathVariable Long caId, @RequestParam String fy, @RequestParam String nfGstr1){
 
@@ -69,15 +66,9 @@ public class FilingOverviewController {
                 gstApiRtype = "R3B";
             }
             System.out.println("Starting Batch Call Govt GST API");
-            gstMasterDataService.performBatchWithFilter(gstAccountEntityList, fy, gstApiRtype);
+            gstMasterDataService.performBatchWithFilter(gstAccountEntityList, fy, gstApiRtype, type, accounts);
             System.out.println("End Batch Call Govt GST API");
-            System.out.println("Starting updateNotFiledOverview");
-            overviewService.updateNotFiledOverview(gstAccountEntityList, type);
-            System.out.println("Ending updateNotFiledOverview");
-            customUserDetailService.updateLastRefreshMasterData(accounts, fy);
-            System.out.println("Done updateLastRefreshMasterData");
-            gstMasterDataService.sendEmail("success");
-            System.out.println("Done sendEmail success");
+
         } catch (Exception ex) {
             System.out.println("Inside Refresh Data Exception");
             gstMasterDataService.sendEmail("error");

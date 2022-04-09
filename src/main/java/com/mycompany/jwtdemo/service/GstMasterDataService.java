@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
@@ -29,6 +30,9 @@ public class GstMasterDataService {
     private FilingOverviewService overviewService;
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired
+    private CustomUserDetailService customUserDetailService;
 
     public String getFinancialYear(String fyType){
         LocalDate ld = LocalDate.now();
@@ -71,9 +75,21 @@ public class GstMasterDataService {
         }
     }
 
-    public void performBatchWithFilter(List<GstAccountEntity> allGstAccEntities, String fy, String rtype){
-        for(GstAccountEntity gae: allGstAccEntities) {
-            gstApiCallService.getAllFilingsWithFeign(gae.getGstNo(), getFinancialYearValue(fy), rtype,"obify.consulting@gmail.com");
+    @Transactional
+    public void performBatchWithFilter(List<GstAccountEntity> allGstAccEntities, String fy, String rtype, String type, List<Long> accounts){
+        try {
+            for (GstAccountEntity gae : allGstAccEntities) {
+                gstApiCallService.getAllFilingsWithFeign(gae.getGstNo(), getFinancialYearValue(fy), rtype, "obify.consulting@gmail.com");
+            }
+            System.out.println("Starting updateNotFiledOverview");
+            overviewService.updateNotFiledOverview(allGstAccEntities, type);
+            System.out.println("Ending updateNotFiledOverview");
+            customUserDetailService.updateLastRefreshMasterData(accounts, fy);
+            System.out.println("Done updateLastRefreshMasterData");
+            this.sendEmail("success");
+            System.out.println("Done sendEmail success");
+        }catch (Exception ex){
+            throw ex;
         }
     }
 
