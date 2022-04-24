@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface GstNotFiledRepository extends CrudRepository<NotFiledOverviewEntity,Long> {
     void deleteAllByGstNo(String gstNo);
+    void deleteAllByGstNoAndReturnType(String gstNo, String returnType);
     List<NotFiledOverviewEntity> findByGstNoAndReturnTypeAndDateOfGstFilingBetween(String gstNo,
                                                   String retType, LocalDate start, LocalDate end);
 }

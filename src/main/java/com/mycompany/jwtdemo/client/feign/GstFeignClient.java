@@ -10,8 +10,5 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface GstFeignClient {
 
     @GetMapping("/public/rettrack")
-    //@GetMapping("/rettrack-success.json")
-    GstWrapperModel getAllFilings(@RequestParam("gstin") String gstNo, @RequestParam("fy") String fy, @RequestParam("email") String email);
-    @GetMapping("/public/rettrack")
     GstWrapperModel getAllFilingsWithRtypeFilter(@RequestParam("gstin") String gstNo, @RequestParam("fy") String fy, @RequestParam("type") String type, @RequestParam("email") String email);
 }
