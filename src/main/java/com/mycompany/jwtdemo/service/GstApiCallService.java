@@ -132,7 +132,11 @@ public class GstApiCallService {
                     filedEntities.add(gstFiledEntity);
                 }
                 //delete all filed entries for this gst and return type
-                filedRepository.deleteAllByGstNoAndReturnType(gstNo, type);//GSTR1
+                try{
+                    filedRepository.deleteAllByGstNoAndReturnType(gstNo, type);//GSTR1
+                }catch (Exception e){
+                 System.err.println("No records to delete deleteAllByGstNoAndReturnType for "+gstNo);
+                }
                 //saveAll(filedEntityList)
                 filedRepository.saveAll(filedEntities);
                 //Subtract the two list to get list of not filed periods
@@ -148,7 +152,11 @@ public class GstApiCallService {
                     notFiledEntities.add(notFiledOverviewEntity);
                 }
                 //delete all filed entries for this gst and return type
-                gstNotFiledRepository.deleteAllByGstNoAndReturnType(gstNo, type);//GSTR1
+                try{
+                    gstNotFiledRepository.deleteAllByGstNoAndReturnType(gstNo, type);//GSTR1
+                }catch (Exception e){
+                    System.err.println("No records to delete deleteAllByGstNoAndReturnType for "+gstNo);
+                }
                 //saveAll(notFiledEntityList)
                 gstNotFiledRepository.saveAll(notFiledEntities);
 
