@@ -45,14 +45,6 @@ public class GstMasterDataService {
         return prevYear+"-"+currentYear.toString().substring(2);
     }
 
-    public String getFinancialYearValue(String fy){
-        Integer currYr = Integer.parseInt(fy);
-        Integer prevYr = currYr - 1;
-        String fyFinal = prevYr+"-"+currYr.toString().substring(2);
-        //2020-21
-        return fyFinal;
-    }
-
     //https://stackoverflow.com/questions/7979165/spring-cron-expression-for-every-after-30-minutes
     //@Scheduled(cron = "0 0/5 * * * ?")//every 5 min
     public void scheduleGetFilings(){
@@ -61,33 +53,23 @@ public class GstMasterDataService {
         filedRepository.deleteAll();
         //Read all GST number from GstAccount table
         List<GstAccountEntity> allGstAccEntities = gstAccountRepository.findAll();
-        performBatch(allGstAccEntities);
+        //performBatch(allGstAccEntities);
         overviewService.updateNotFiledOverview(allGstAccEntities, "BOTH");
         System.out.println("*******Scheduler Iteration Ended***********");
     }
 
-    public void performBatch(List<GstAccountEntity> allGstAccEntities){
-        for(GstAccountEntity gae: allGstAccEntities) {
-            gstApiCallService.getAllFilingsWithFeign(gae.getGstNo(), getFinancialYear("current"), "BOTH", "obify.consulting@gmail.com");
-        }
-        for(GstAccountEntity gae: allGstAccEntities) {
-            gstApiCallService.getAllFilingsWithFeign(gae.getGstNo(), getFinancialYear("previous"), "BOTH","obify.consulting@gmail.com");
-        }
-    }
-
     @Transactional
-    public void performBatchWithFilter(List<GstAccountEntity> allGstAccEntities, String fy, String rtype, String type, List<Long> accounts){
+    public void performBatchWithFilter(List<GstAccountEntity> allGstAccEntities, String fy, String gstApiRtype, String type, List<Long> accounts){
         try {
-            for (GstAccountEntity gae : allGstAccEntities) {
-                gstApiCallService.getAllFilingsWithFeign(gae.getGstNo(), getFinancialYearValue(fy), rtype, "obify.consulting@gmail.com");
+            if(allGstAccEntities != null && !allGstAccEntities.isEmpty()) {
+                for (GstAccountEntity gae : allGstAccEntities) {//fy=2022
+                    gstApiCallService.getAllFilingsWithFeign(gae.getGstNo(), fy, gstApiRtype, type, "obify.consulting@gmail.com");
+                }
+                customUserDetailService.updateLastRefreshMasterData(accounts, fy);
+                System.out.println("Done updateLastRefreshMasterData");
+                //this.sendEmail("success");
+                System.out.println("Done sendEmail success");
             }
-            System.out.println("Starting updateNotFiledOverview");
-            overviewService.updateNotFiledOverview(allGstAccEntities, type);
-            System.out.println("Ending updateNotFiledOverview");
-            customUserDetailService.updateLastRefreshMasterData(accounts, fy);
-            System.out.println("Done updateLastRefreshMasterData");
-            this.sendEmail("success");
-            System.out.println("Done sendEmail success");
         }catch (Exception ex){
             throw ex;
         }

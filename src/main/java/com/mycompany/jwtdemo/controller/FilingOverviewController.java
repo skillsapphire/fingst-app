@@ -53,13 +53,9 @@ public class FilingOverviewController {
     public void refreshMasterDataWithFilter(@PathVariable Long caId, @RequestParam List<Long> accounts, @RequestParam("fy") String fy, @RequestParam("type") String type) {
         try {
             List<GstAccountEntity> gstAccountEntityList = null;
-            if(accounts.isEmpty()){
-                gstAccountEntityList = overviewService.getGstAccounts(caId);
-            }else{
-                gstAccountEntityList = gstAccountRepository.findAllByIdIn(accounts);
-            }
+            gstAccountEntityList = gstAccountRepository.findAllByIdIn(accounts);
 
-            String gstApiRtype = "BOTH";
+            String gstApiRtype = "";
             if(type.equalsIgnoreCase("GSTR1")){
                 gstApiRtype = "R1";
             }else if(type.equalsIgnoreCase("GSTR1")){
