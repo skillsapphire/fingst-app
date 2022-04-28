@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -103,69 +104,87 @@ public class GstApiCallService {
         }
 
         if(gfwm != null){
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-            //Converting every GST Filing entry for 1 GST Number for 1 FY into GstEntity and saving in Database
-            if(gfwm.getData() != null) {
-                //Create List of Filed Entities
-                List<GstFiledEntity> filedEntities = new ArrayList<>();
-                GstFiledEntity gstFiledEntity = null;
 
-                List<NotFiledOverviewEntity> notFiledEntities = new ArrayList<>();
-                NotFiledOverviewEntity notFiledOverviewEntity = null;
-                List<String> filedFyList = new ArrayList<>();
+            //Converting every GST Filing entry for 1 GST Number for 1 FY into GstEntity and saving in Database
+        if(gfwm.getData() != null) {
                 /***********
                  * Dummy
                  * SELECT * FROM `gst_filed_tracker` WHERE gst_no LIKE '%21BJHPP8268E1Z3%' AND return_type LIKE '%GSTR1%';
                  */
                 //filedFyList.addAll(Arrays.asList("012022", "092021", "052021", "082021", "072021", "042021", "062021", "032021"));
-                for (GstDataModel gdm : gfwm.getData().getEFiledlist()) {
-                    filedFyList.add(gdm.getRet_prd());
-                    //create filed entity
-                    gstFiledEntity = new GstFiledEntity();
-                    gstFiledEntity.setReturnType(gdm.getRtntype());
-                    gstFiledEntity.setGstNo(gfwm.getHeader().getGstin());
-                    LocalDate localDate = LocalDate.parse(gdm.getDof(), formatter);
-                    gstFiledEntity.setDateOfFiling(localDate);
-                    gstFiledEntity.setReturnPeriod(gstCommonUtil.convertReturnPeriodDate(gdm.getRet_prd()));
-                    gstFiledEntity.setStatus(gdm.getStatus());
-                    gstFiledEntity.setMode(gdm.getMof());
-                    filedEntities.add(gstFiledEntity);
-                }
-                //delete all filed entries for this gst and return type
-                try{
-                    filedRepository.deleteAllByGstNoAndReturnType(gstNo, type);//GSTR1
-                }catch (Exception e){
-                 System.err.println("No records to delete deleteAllByGstNoAndReturnType for "+gstNo);
-                }
-                //saveAll(filedEntityList)
-                filedRepository.saveAll(filedEntities);
-                //Subtract the two list to get list of not filed periods
-                List<String> staticListRetPeriod = gstCommonUtil.listOfStaticFy(fy);
-                staticListRetPeriod.removeAll(filedFyList);
-                //Create List of Not Filed Entities
-                for(String retPeriod: staticListRetPeriod){//now it has only not file ret periods
-                    notFiledOverviewEntity = new NotFiledOverviewEntity();
-                    notFiledOverviewEntity.setGstNo(gstNo);
-                    notFiledOverviewEntity.setIsGstFiled(false);
-                    notFiledOverviewEntity.setReturnType(type);
-                    notFiledOverviewEntity.setDateOfGstFiling(gstCommonUtil.convertReturnPeriodDate(retPeriod));
-                    notFiledEntities.add(notFiledOverviewEntity);
-                }
-                //delete all filed entries for this gst and return type
-                try{
-                    gstNotFiledRepository.deleteAllByGstNoAndReturnType(gstNo, type);//GSTR1
-                }catch (Exception e){
-                    System.err.println("No records to delete deleteAllByGstNoAndReturnType for "+gstNo);
-                }
-                //saveAll(notFiledEntityList)
-                gstNotFiledRepository.saveAll(notFiledEntities);
-
+        List<String> filedFyList = operateFiled(gfwm, gstNo, type, fy);
+            // TEST //List<String> filedFyList = operateFiledTest();
+                operateNotFiled(filedFyList, gstNo, type, fy);
                 System.out.println("Deletion and Updation Done for gstNo: "+gstNo);
-            }
+       }
             System.out.println("======Done getAllFilingsWithFeign Call Govt GST API - for FY - "+fy);
         }
         //log after successful insertion of all records for 1 GST number
         return gfwm;
+    }
+
+    private List<String> operateFiledTest(){
+        List<String> filedFyList = new ArrayList<>();
+        filedFyList.addAll(Arrays.asList("012022", "092021", "052021", "082021", "072021", "042021", "062021", "032021"));
+        return filedFyList;
+    }
+    private List<String> operateFiled(GstWrapperModel gfwm, String gstNo, String type, String fy){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        //Create List of Filed Entities
+        List<GstFiledEntity> filedEntities = new ArrayList<>();
+        GstFiledEntity gstFiledEntity = null;
+        List<String> filedFyList = new ArrayList<>();
+
+        for (GstDataModel gdm : gfwm.getData().getEFiledlist()) {
+            filedFyList.add(gdm.getRet_prd());
+            //create filed entity
+            gstFiledEntity = new GstFiledEntity();
+            gstFiledEntity.setReturnType(gdm.getRtntype());
+            gstFiledEntity.setGstNo(gfwm.getHeader().getGstin());
+            LocalDate localDate = LocalDate.parse(gdm.getDof(), formatter);
+            gstFiledEntity.setDateOfFiling(localDate);
+            gstFiledEntity.setReturnPeriod(gstCommonUtil.convertReturnPeriodDate(gdm.getRet_prd()));
+            gstFiledEntity.setStatus(gdm.getStatus());
+            gstFiledEntity.setMode(gdm.getMof());
+            filedEntities.add(gstFiledEntity);
+        }
+        //delete all filed entries for this gst and return type
+        try{
+            filedRepository.deleteAllByGstNoAndReturnType(gstNo, type);//GSTR1
+        }catch (Exception e){
+            System.err.println("No records to delete deleteAllByGstNoAndReturnType for "+gstNo);
+        }
+        //saveAll(filedEntityList)
+        filedRepository.saveAll(filedEntities);
+
+        return filedFyList;
+    }
+    private void operateNotFiled(List<String> filedFyList, String gstNo, String type, String fy){
+
+        List<NotFiledOverviewEntity> notFiledEntities = new ArrayList<>();
+        NotFiledOverviewEntity notFiledOverviewEntity = null;
+        //Subtract the two list to get list of not filed periods
+        List<String> staticListRetPeriod = gstCommonUtil.listOfStaticFy(fy);
+        staticListRetPeriod.removeAll(filedFyList);
+        //Create List of Not Filed Entities
+        for(String retPeriod: staticListRetPeriod){//now it has only not file ret periods
+            notFiledOverviewEntity = new NotFiledOverviewEntity();
+            notFiledOverviewEntity.setGstNo(gstNo);
+            notFiledOverviewEntity.setIsGstFiled(false);
+            notFiledOverviewEntity.setReturnType(type);
+            notFiledOverviewEntity.setDateOfGstFiling(gstCommonUtil.convertReturnPeriodDate(retPeriod));
+            notFiledEntities.add(notFiledOverviewEntity);
+        }
+        //delete all filed entries for this gst and return type
+        try{
+            LocalDate start = LocalDate.of(Integer.parseInt(fy) -1, Month.APRIL,1);
+            LocalDate end = LocalDate.of(Integer.parseInt(fy), Month.MARCH,31);
+            gstNotFiledRepository.deleteAllByGstNoAndReturnTypeAndDateOfGstFilingBetween(gstNo, type, start, end);//GSTR1
+        }catch (Exception e){
+            System.err.println("No records to delete deleteAllByGstNoAndReturnType for "+gstNo);
+        }
+        //saveAll(notFiledEntityList)
+        gstNotFiledRepository.saveAll(notFiledEntities);
     }
 
 }

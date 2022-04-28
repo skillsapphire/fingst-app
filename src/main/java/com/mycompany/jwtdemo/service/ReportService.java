@@ -31,7 +31,7 @@ public class ReportService {
     public List<NotFiledDTO> getReports(String month, Integer year, String retType , Long caId) {
         LocalDate startDate, endDate;
         if(ObjectUtils.isEmpty(month)){
-            startDate = LocalDate.of(year, Month.APRIL,1);
+            startDate = LocalDate.of(year -1, Month.APRIL,1);
             endDate = LocalDate.of(year, Month.MARCH,31);
         }else {
             startDate = LocalDate.of(year, Month.valueOf(month.toUpperCase(Locale.ROOT)),1);

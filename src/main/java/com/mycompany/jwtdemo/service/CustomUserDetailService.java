@@ -44,15 +44,19 @@ public class CustomUserDetailService implements UserDetailsService {
 
         LocalDate ld = LocalDate.now();
         Integer currentYear = ld.getYear();
+        if(ld.getMonthValue() >= 3){
+            currentYear++;
+        }
+        Integer fiscalYr = Integer.parseInt(fy);
 
             // take the instant
             Instant instant = Instant.now();
             //https://stackoverflow.com/questions/59048196/to-display-local-date-time-for-different-countries-in-java
             // then in Asia/Calcutta
             ZonedDateTime currentISTime = instant.atZone(ZoneId.of("Asia/Calcutta"));
-            List<GstAccountEntity> gstAccountEntityList = gstAccountRepository.findAllByIdIn(accounts);
+            List<GstAccountEntity> gstAccountEntityList = gstAccountRepository.findAllById(accounts);
             for(GstAccountEntity gae: gstAccountEntityList){
-                if(currentYear.toString().equalsIgnoreCase(fy)){
+                if(currentYear.equals(fiscalYr)){
                     gae.setLastRefreshedCurrFy(currentISTime);
                 }else{
                     gae.setLastRefreshedPrevFy(currentISTime);

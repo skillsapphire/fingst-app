@@ -100,8 +100,8 @@ public class FilingOverviewService {
         String[] yr = fy.split("-");
         Map<String,LocalDate> fiscalYear = new HashMap<>();
         Integer year = Integer.parseInt(yr[0]);
-        fiscalYear.put("startDate", LocalDate.of(year, Month.APRIL,1));
-        fiscalYear.put("endDate", LocalDate.of(year - 1, Month.MARCH,31));
+        fiscalYear.put("startDate", LocalDate.of(year-1, Month.APRIL,1));
+        fiscalYear.put("endDate", LocalDate.of(year, Month.MARCH,31));
         return fiscalYear;
     }
 
