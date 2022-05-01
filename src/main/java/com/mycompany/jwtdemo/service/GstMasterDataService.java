@@ -30,6 +30,8 @@ public class GstMasterDataService {
     private FilingOverviewService overviewService;
     @Autowired
     private RestTemplate restTemplate;
+    @Autowired
+    private EmailService emailService;
 
     @Autowired
     private CustomUserDetailService customUserDetailService;
@@ -67,8 +69,6 @@ public class GstMasterDataService {
                 }
                 customUserDetailService.updateLastRefreshMasterData(accounts, fy);
                 System.out.println("Done updateLastRefreshMasterData");
-                //this.sendEmail("success");
-                System.out.println("Done sendEmail success");
             }
         }catch (Exception ex){
             throw ex;

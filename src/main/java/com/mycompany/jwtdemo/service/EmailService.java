@@ -1,11 +1,8 @@
 package com.mycompany.jwtdemo.service;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -13,11 +10,13 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.mail.javamail.MimeMessagePreparator;
 import org.springframework.stereotype.Service;
 
+import javax.mail.BodyPart;
 import javax.mail.Message;
+import javax.mail.Multipart;
 import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeUtility;
-import java.io.*;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMultipart;
+import java.io.InputStream;
 
 @Service
 public class EmailService {
@@ -40,18 +39,13 @@ public class EmailService {
 
     public void sendMailWithAttachment(String to, String subject, String body, String filename, InputStream inputStream)
     {
-        MimeMessagePreparator preparator = new MimeMessagePreparator()
-        {
-            public void prepare(MimeMessage mimeMessage) throws Exception
-            {
-                mimeMessage.setRecipient(Message.RecipientType.TO, new InternetAddress(to));
-                mimeMessage.setFrom(new InternetAddress("info@obify.in"));
-                mimeMessage.setSubject(subject);
-                mimeMessage.setText(body);
-
-                MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
-                helper.addAttachment(filename,  new ByteArrayResource(IOUtils.toByteArray(inputStream)), "application/vnd.ms-excel");
-            }
+        MimeMessagePreparator preparator = mimeMessage -> {
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+            helper.setFrom(new InternetAddress("info@obify.in"));
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(body);
+            helper.addAttachment(filename,  new ByteArrayResource(IOUtils.toByteArray(inputStream)), "application/vnd.ms-excel");
         };
 
         try {
@@ -59,7 +53,9 @@ public class EmailService {
         }
         catch (MailException ex) {
             // simply log it and go on...
+            System.err.println("In exception sending email");
             System.err.println(ex.getMessage());
+            ex.printStackTrace();
         }
     }
 }

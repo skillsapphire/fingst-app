@@ -106,6 +106,12 @@ public class CustomUserDetailService implements UserDetailsService {
         userRepository.save(entity);
     }
 
+    public String getEmail(Long caId){
+        Optional<UserEntity> ue = userRepository.findById(caId);
+        UserEntity entity = ue.get();
+        return entity.getEmail();
+    }
+
     //this method actually does the validation for user existence
     @Override
     public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
