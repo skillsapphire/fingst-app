@@ -54,6 +54,7 @@ public class JwtController {
         //authenticate the user
         try {
             authenticationManager.authenticate(upat);
+
         }catch (Exception e){
             e.printStackTrace();
         }

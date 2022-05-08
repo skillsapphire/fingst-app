@@ -41,7 +41,8 @@ public class ReportController {
         String filename = "filing_report_"+month+"_"+fiscalYear+".xlsx";
         String subject = "Filing Report " + month + "_" + fiscalYear;
         String body = "Hi, Your report is ready";
-        emailService.sendMailWithAttachment(customUserDetailService.getEmail(caId), subject, body, filename, in);
+        //emailService.sendMailWithAttachment(customUserDetailService.getEmail(caId), subject, body, filename, in);
+        emailService.sendMailWithAttachment("alishapatel2006@gmail.com", subject, body, filename, in);
         return ResponseEntity.ok().build();
         /*return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)

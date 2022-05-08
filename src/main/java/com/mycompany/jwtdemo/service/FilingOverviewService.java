@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.YearMonth;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -53,7 +54,7 @@ public class FilingOverviewService {
                     findAllByGstNoAndReturnPeriodBetween(firm.getGstNo(), fiscalYear.get("startDate"), fiscalYear.get("endDate"));
             firm.setReturnPeriodGstr3b(getMostRecentReturnDateGstrByReturnType(filedEntities, "GSTR3B"));
             firm.setReturnPeriodGstr1(getMostRecentReturnDateGstrByReturnType(filedEntities, "GSTR1"));
-            firm.setGstr1NotFiledPeriod(getNotFiledGstr1Months(filedEntities, fiscalYear));
+            firm.setGstr1NotFiledPeriod(getNotFiledGstr1Months(firm.getGstNo(), fiscalYear));
         });
         return overviewDTOS;
     }
@@ -105,19 +106,18 @@ public class FilingOverviewService {
         return fiscalYear;
     }
 
-    private List<MonthYearModel> getNotFiledGstr1Months(List<GstFiledEntity> filedEntities , Map<String, LocalDate> fy){
+    private List<MonthYearModel> getNotFiledGstr1Months(String gstNo , Map<String, LocalDate> fy){
         List<MonthYearModel> notFiledDetails = new ArrayList<>();
-        LocalDate start = fy.get("startDate");
-        while(start.isBefore(fy.get("endDate"))){
-            notFiledDetails.add(new MonthYearModel(start.getMonth().name(), String.valueOf(start.getYear())));
-            start = start.plusMonths(1);
-        }
-        filedEntities.forEach(e -> {
-            notFiledDetails.removeIf(nfe -> nfe.getMonth().equalsIgnoreCase(e.getReturnPeriod().getMonth().name()) &&
-                    nfe.getYear().equalsIgnoreCase(String.valueOf(e.getReturnPeriod().getYear())));
-        });
+        List<NotFiledOverviewEntity> nfe = notFiledRepository.findByGstNoAndReturnTypeAndDateOfGstFilingBetween(gstNo,
+                "GSTR1",fy.get("startDate"),fy.get("endDate"));
+        notFiledDetails.addAll(nfe.stream().map(nfeObj -> {
+            MonthYearModel monthYearModel = new MonthYearModel(nfeObj.getDateOfGstFiling().getMonth().name(),
+                    String.valueOf(nfeObj.getDateOfGstFiling().getYear()));
+            return monthYearModel;
+        }).collect(Collectors.toList()));
         return notFiledDetails;
     }
+
     @Transactional
     public void updateNotFiledOverview(List<GstAccountEntity> accounts, String type) {
         for(GstAccountEntity ge: accounts){

@@ -12,4 +12,5 @@ public interface GstNotFiledRepository extends CrudRepository<NotFiledOverviewEn
     void deleteAllByGstNoAndReturnTypeAndDateOfGstFilingBetween(String gstNo, String returnType, LocalDate start, LocalDate end);
     List<NotFiledOverviewEntity> findByGstNoAndReturnTypeAndDateOfGstFilingBetween(String gstNo,
                                                   String retType, LocalDate start, LocalDate end);
+
 }
