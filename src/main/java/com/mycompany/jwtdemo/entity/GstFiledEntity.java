@@ -3,15 +3,16 @@ package com.mycompany.jwtdemo.entity;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.time.LocalDate;
 
 @Getter
 @Setter
 @Entity(name = "gst_filed_tracker")
+@Table(indexes = {
+        @Index(name = "index_return_date", columnList = "returnPeriod", unique = true),
+        @Index(name = "index_gstno_return_date", columnList = "gstNo, returnPeriod", unique = true),
+})
 public class GstFiledEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
