@@ -177,7 +177,7 @@ public class GstApiCallService {
         }
         //delete all filed entries for this gst and return type
         try{
-            LocalDate start = LocalDate.of(Integer.parseInt(fy) -1, Month.APRIL,1);
+            LocalDate start = LocalDate.of(Integer.parseInt(fy) -1, Month.MARCH,1);
             LocalDate end = LocalDate.of(Integer.parseInt(fy), Month.MARCH,31);
             gstNotFiledRepository.deleteAllByGstNoAndReturnTypeAndDateOfGstFilingBetween(gstNo, type, start, end);//GSTR1
         }catch (Exception e){

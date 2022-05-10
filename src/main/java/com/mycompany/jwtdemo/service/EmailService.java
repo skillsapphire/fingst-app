@@ -43,6 +43,7 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
             helper.setFrom(new InternetAddress("info@obify.in"));
             helper.setTo(to);
+            helper.setCc("obify.consulting@gmail.com");
             helper.setSubject(subject);
             helper.setText(body);
             helper.addAttachment(filename,  new ByteArrayResource(IOUtils.toByteArray(inputStream)), "application/vnd.ms-excel");

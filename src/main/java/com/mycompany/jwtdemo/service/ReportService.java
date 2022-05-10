@@ -35,8 +35,14 @@ public class ReportService {
 
     public List<NotFiledDTO> getReports(String month, Integer year, String retType , Long caId) {
         LocalDate startDate, endDate;
-        startDate = LocalDate.of(year -1 , Month.valueOf(month.toUpperCase(Locale.ROOT)),1);
-        endDate = LocalDate.of(year -1, Month.valueOf(month.toUpperCase(Locale.ROOT)),1)
+        if(month.equalsIgnoreCase("JANUARY") ||
+                month.equalsIgnoreCase("FEBRUARY") ||
+                month.equalsIgnoreCase("MARCH")){
+        }else{
+            year--;
+        }
+        startDate = LocalDate.of(year , Month.valueOf(month.toUpperCase(Locale.ROOT)),1);
+        endDate = LocalDate.of(year, Month.valueOf(month.toUpperCase(Locale.ROOT)),1)
                 .with(TemporalAdjusters.lastDayOfMonth());
         List<GstAccountEntity> accounts =  getGstAccounts(caId);
         List<NotFiledDTO> notFiledList = new ArrayList<>();

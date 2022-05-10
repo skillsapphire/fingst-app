@@ -50,10 +50,14 @@ public class JwtController {
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> generateToken(@RequestBody JwtRequest jwtRequest){
 
-        UsernamePasswordAuthenticationToken upat = new UsernamePasswordAuthenticationToken(jwtRequest.getUserName(), jwtRequest.getPassword());
+        //UsernamePasswordAuthenticationToken upat = new UsernamePasswordAuthenticationToken(jwtRequest.getUserName(), jwtRequest.getPassword());
         //authenticate the user
         try {
-            authenticationManager.authenticate(upat);
+           // authenticationManager.authenticate(upat);
+            Boolean isValid = customUserDetailService.validateCredentials(jwtRequest.getUserName(), jwtRequest.getPassword());
+            if(!isValid){
+                return new ResponseEntity<>(new JwtResponse(), HttpStatus.UNAUTHORIZED);
+            }
 
         }catch (Exception e){
             e.printStackTrace();
@@ -62,8 +66,8 @@ public class JwtController {
         String jwtToken = jwtUtil.generateToken(userDetails);
 
         JwtResponse jwtResponse = new JwtResponse(jwtToken);
-        //return ResponseEntity.ok(jwtResponse);
-        return new ResponseEntity<JwtResponse>(jwtResponse, HttpStatus.OK);
+        return ResponseEntity.ok(jwtResponse);
+        //return new ResponseEntity<JwtResponse>(jwtResponse, HttpStatus.OK);
 
     }
 

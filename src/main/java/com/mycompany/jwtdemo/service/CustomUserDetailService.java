@@ -106,6 +106,11 @@ public class CustomUserDetailService implements UserDetailsService {
         userRepository.save(entity);
     }
 
+    public Boolean validateCredentials(String username, String password){
+        UserEntity ue = userRepository.findByUsernameAndActiveContains(username, "Y");
+        return this.passwordEncoder.matches(password, ue.getPassword());
+    }
+
     public String getEmail(Long caId){
         Optional<UserEntity> ue = userRepository.findById(caId);
         UserEntity entity = ue.get();

@@ -32,7 +32,7 @@ public class GstCommonUtil {
         Integer fyInt = Integer.parseInt(fy);
         StringBuilder sb = null;
         //if fy==2022 then returnPeriodList - [042021,052021,062021....012022,022022,032022]
-        for(Integer i=4; i<=9; i++){
+        for(Integer i=3; i<=9; i++){
             sb = new StringBuilder();
             sb.append("0");
             sb.append(i);
