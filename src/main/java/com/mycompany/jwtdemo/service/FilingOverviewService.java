@@ -41,21 +41,23 @@ public class FilingOverviewService {
         Map<String,LocalDate> fiscalYear = calculateFiscalYear(fy);
         // Get the firm name and gst no
         List<GstAccountEntity> gstAccounts = getGstAccounts(caId);
-        gstAccounts.stream().forEach(account -> {
+        gstAccounts.parallelStream().forEach(account -> {
             FilingOverviewDTO overviewDTO = new FilingOverviewDTO();
             overviewDTO.setAccountId(account.getId());
             overviewDTO.setFirmName(account.getFirmName());
             overviewDTO.setGstNo(account.getGstNo());
             overviewDTOS.add(overviewDTO);
         });
-
-        overviewDTOS.forEach(firm -> {
+        //long before = System.currentTimeMillis();
+        overviewDTOS.parallelStream().forEach(firm -> {
             List<GstFiledEntity> filedEntities = gstFiledRepository.
                     findAllByGstNoAndReturnPeriodBetween(firm.getGstNo(), fiscalYear.get("startDate"), fiscalYear.get("endDate"));
             firm.setReturnPeriodGstr3b(getMostRecentReturnDateGstrByReturnType(filedEntities, "GSTR3B"));
             firm.setReturnPeriodGstr1(getMostRecentReturnDateGstrByReturnType(filedEntities, "GSTR1"));
             firm.setGstr1NotFiledPeriod(getNotFiledGstr1Months(firm.getGstNo(), fiscalYear));
         });
+        //long after = System.currentTimeMillis();
+        //System.out.println(after - before);
         return overviewDTOS;
     }
     public List<FilingOverviewDTO> getFilingOverviewWithGST1Filter(Long caId, String fy, String nfGst1){
@@ -88,7 +90,7 @@ public class FilingOverviewService {
     }
 
     private LocalDate getMostRecentReturnDateGstrByReturnType(List<GstFiledEntity> filedEntities, String returnType){
-        List<GstFiledEntity> gstrList = filedEntities.stream().filter(e -> e.getReturnType().equalsIgnoreCase(returnType))
+        List<GstFiledEntity> gstrList = filedEntities.parallelStream().filter(e -> e.getReturnType().equalsIgnoreCase(returnType))
                 .collect(Collectors.toList());
         LocalDate maxDate = null;
         List<LocalDate> dates = gstrList.stream().map(GstFiledEntity::getReturnPeriod).collect(Collectors.toList());
@@ -110,7 +112,7 @@ public class FilingOverviewService {
         List<MonthYearModel> notFiledDetails = new ArrayList<>();
         List<NotFiledOverviewEntity> nfe = notFiledRepository.findByGstNoAndReturnTypeAndDateOfGstFilingBetween(gstNo,
                 "GSTR1",fy.get("startDate"),fy.get("endDate"));
-        notFiledDetails.addAll(nfe.stream().map(nfeObj -> {
+        notFiledDetails.addAll(nfe.parallelStream().map(nfeObj -> {
             MonthYearModel monthYearModel = new MonthYearModel(nfeObj.getDateOfGstFiling().getMonth().name(),
                     String.valueOf(nfeObj.getDateOfGstFiling().getYear()));
             return monthYearModel;
@@ -123,7 +125,7 @@ public class FilingOverviewService {
         for(GstAccountEntity ge: accounts){
             notFiledRepository.deleteAllByGstNo(ge.getGstNo());
         }
-        accounts.forEach(acc -> {
+        accounts.parallelStream().forEach(acc -> {
             List<GstFiledEntity> filedEntities = gstFiledRepository.findAllByGstNoOrderByGstNo(acc.getGstNo());
             if(type.equalsIgnoreCase("BOTH")) {
                 List<GstFiledEntity> gstr1List = filedEntities.stream()
@@ -144,7 +146,7 @@ public class FilingOverviewService {
     }
 
     public void updateEntityByDates(List<GstFiledEntity> gstList, String gstNo, String returnType){
-        List<LocalDate> dates = gstList.stream().map(GstFiledEntity::getReturnPeriod).collect(Collectors.toList());
+        List<LocalDate> dates = gstList.parallelStream().map(GstFiledEntity::getReturnPeriod).collect(Collectors.toList());
         List<NotFiledOverviewEntity> nfowList = new ArrayList<>();
         LocalDate minDate,maxDate;
         if(!dates.isEmpty()) {
@@ -169,7 +171,7 @@ public class FilingOverviewService {
         }
 
         if(!nfowList.isEmpty() && !gstList.isEmpty()) {
-            gstList.forEach(f -> nfowList.forEach(nfow -> {
+            gstList.parallelStream().forEach(f -> nfowList.forEach(nfow -> {
                 if (f.getReturnPeriod().getMonth().equals(nfow.getDateOfGstFiling().getMonth()) &&
                         f.getReturnPeriod().getYear() == nfow.getDateOfGstFiling().getYear()) {
                     nfow.setDateOfGstFiling(f.getReturnPeriod());

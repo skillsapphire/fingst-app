@@ -46,7 +46,7 @@ public class ReportService {
                 .with(TemporalAdjusters.lastDayOfMonth());
         List<GstAccountEntity> accounts =  getGstAccounts(caId);
         List<NotFiledDTO> notFiledList = new ArrayList<>();
-        accounts.forEach(acct -> {
+        accounts.parallelStream().forEach(acct -> {
             NotFiledDTO notFiledDTO = getReportDTOByReturnTypeAndGstNo(acct.getGstNo(), startDate, endDate, retType);
             notFiledDTO.setGstNo(acct.getGstNo());
             notFiledDTO.setFirmName(acct.getFirmName());
