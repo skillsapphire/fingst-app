@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.time.YearMonth;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -48,7 +47,7 @@ public class FilingOverviewService {
             overviewDTO.setGstNo(account.getGstNo());
             overviewDTOS.add(overviewDTO);
         });
-        //long before = System.currentTimeMillis();
+        long before = System.currentTimeMillis();
         overviewDTOS.parallelStream().forEach(firm -> {
             List<GstFiledEntity> filedEntities = gstFiledRepository.
                     findAllByGstNoAndReturnPeriodBetween(firm.getGstNo(), fiscalYear.get("startDate"), fiscalYear.get("endDate"));
@@ -56,8 +55,8 @@ public class FilingOverviewService {
             firm.setReturnPeriodGstr1(getMostRecentReturnDateGstrByReturnType(filedEntities, "GSTR1"));
             firm.setGstr1NotFiledPeriod(getNotFiledGstr1Months(firm.getGstNo(), fiscalYear));
         });
-        //long after = System.currentTimeMillis();
-        //System.out.println(after - before);
+        long after = System.currentTimeMillis();
+        System.out.println(after - before);
         return overviewDTOS;
     }
     public List<FilingOverviewDTO> getFilingOverviewWithGST1Filter(Long caId, String fy, String nfGst1){
@@ -90,12 +89,13 @@ public class FilingOverviewService {
     }
 
     private LocalDate getMostRecentReturnDateGstrByReturnType(List<GstFiledEntity> filedEntities, String returnType){
-        List<GstFiledEntity> gstrList = filedEntities.parallelStream().filter(e -> e.getReturnType().equalsIgnoreCase(returnType))
-                .collect(Collectors.toList());
         LocalDate maxDate = null;
-        List<LocalDate> dates = gstrList.stream().map(GstFiledEntity::getReturnPeriod).collect(Collectors.toList());
-        if(!dates.isEmpty())
-          maxDate = Collections.max(dates);
+        List<LocalDate> maxDates = filedEntities.parallelStream()
+                .filter(e -> e.getReturnPeriod()!=null && e.getReturnType().equalsIgnoreCase(returnType))
+                .map(GstFiledEntity::getReturnPeriod)
+                .collect(Collectors.toList());
+        if(!maxDates.isEmpty())
+            maxDate = Collections.max(maxDates);
         return maxDate;
     }
 
@@ -128,16 +128,16 @@ public class FilingOverviewService {
         accounts.parallelStream().forEach(acc -> {
             List<GstFiledEntity> filedEntities = gstFiledRepository.findAllByGstNoOrderByGstNo(acc.getGstNo());
             if(type.equalsIgnoreCase("BOTH")) {
-                List<GstFiledEntity> gstr1List = filedEntities.stream()
+                List<GstFiledEntity> gstr1List = filedEntities.parallelStream()
                         .filter(e -> e.getReturnType().equalsIgnoreCase("GSTR1"))
                         .collect(Collectors.toList());
                 updateEntityByDates(gstr1List, acc.getGstNo(), "GSTR1");
-                List<GstFiledEntity> gstr3bList = filedEntities.stream()
+                List<GstFiledEntity> gstr3bList = filedEntities.parallelStream()
                         .filter(e -> e.getReturnType().equalsIgnoreCase("GSTR3B"))
                         .collect(Collectors.toList());
                 updateEntityByDates(gstr3bList, acc.getGstNo(), "GSTR3B");
             }else {
-                List<GstFiledEntity> gstrTypeList = filedEntities.stream()
+                List<GstFiledEntity> gstrTypeList = filedEntities.parallelStream()
                         .filter(e -> e.getReturnType().equalsIgnoreCase(type))
                         .collect(Collectors.toList());
                 updateEntityByDates(gstrTypeList, acc.getGstNo(), type);
