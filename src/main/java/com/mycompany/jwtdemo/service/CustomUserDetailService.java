@@ -136,11 +136,12 @@ public class CustomUserDetailService implements UserDetailsService {
         String formattedString = istTime.format(formatter);
         userModel.setLastRefreshedFormatted(formattedString);
 
-        istTime = userEntity.getLastRefreshedNotFiled().withZoneSameInstant(ZoneId.of("Asia/Calcutta"));
-        formattedString = istTime.format(formatter);
-        userModel.setLastRefreshedNotFiled(istTime);
-        userModel.setLastRefreshedNotFiledFormatted(formattedString);
-
+        if(null != userEntity.getLastRefreshedNotFiled()) {
+            istTime = userEntity.getLastRefreshedNotFiled().withZoneSameInstant(ZoneId.of("Asia/Calcutta"));
+            formattedString = istTime.format(formatter);
+            userModel.setLastRefreshedNotFiled(istTime);
+            userModel.setLastRefreshedNotFiledFormatted(formattedString);
+        }
         //convert RoleEntities to RoleModels
         Set<RoleModel> roleModels = new HashSet<>();
         RoleModel rm = null;
