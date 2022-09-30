@@ -9,10 +9,10 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Entity(name = "gst_filed_tracker")
-@Table(indexes = {
+/*@Table(indexes = {
         @Index(name = "index_return_date", columnList = "returnPeriod", unique = true),
         @Index(name = "index_gstno_return_date", columnList = "gstNo, returnPeriod", unique = true),
-})
+})*/
 public class GstFiledEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
